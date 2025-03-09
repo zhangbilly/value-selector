@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>价值观选择器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f4f4f4;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .nav-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 300px;
+        }
+        .nav-link {
+            display: block;
+            text-decoration: none;
+            color: white;
+            background: #007BFF;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .nav-link:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <h1>价值观选择器</h1>
+    <div class="nav-container">
+        <a class="nav-link" href="chatgpt/index.html">ChatGPT</a>
+        <a class="nav-link" href="claude/index.html">Claude</a>
+        <a class="nav-link" href="deepseek-R1/index.html">DeepSeek-R1</a>
+        <a class="nav-link" href="deepseek-V3/index.html">DeepSeek-V3</a>
+        <a class="nav-link" href="tongyi/index.html">通义</a>
+        <a class="nav-link" href="trae-doubao/index.html">Trae</a>
+    </div>
+</body>
+</html>

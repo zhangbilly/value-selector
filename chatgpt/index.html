@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>价值观选择器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+</head>
+
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-end mb-4">
+            <button id="toggle-language" class="px-4 py-2 bg-green-500 text-white rounded shadow">切换语言</button>
+        </div>
+        <!-- 待选列表 -->
+        <div class="bg-white p-4 shadow rounded-lg mb-4">
+            <div class="flex items-center overflow-hidden relative h-16">
+                <div id="word-container" class="flex items-center space-x-2 w-full overflow-hidden"></div>
+            </div>
+            <div class="flex justify-center space-x-4 mt-2">
+                <button id="skip-button" class="px-4 py-2 bg-gray-200 rounded shadow">不重要</button>
+                <button id="select-button" class="px-4 py-2 bg-blue-500 text-white rounded shadow">选择</button>
+            </div>
+        </div>
+        <!-- 已选列表 -->
+        <div class="bg-white p-4 shadow rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-bold">已选列表</h2>
+                <button id="toggle-button" class="text-blue-500 text-sm">展开全部</button>
+            </div>
+            <ul id="selected-list" class="space-y-2 max-h-60 overflow-hidden"></ul>
+        </div>
+    </div>
+    <script>
+        let language = 'cn';
+        let words = {
+            cn: [
+                { "value": "富足", "desc": "生活充满由内心驱动的体验" },
+                { "value": "接受", "desc": "接纳周围的人与经历" },
+                { "value": "责任感", "desc": "坚守自己的承诺" },
+                { "value": "准确性", "desc": "保持正确或精确" },
+                { "value": "成就", "desc": "获得成果与成功" },
+                { "value": "推动", "desc": "推动一项事业或计划" },
+                { "value": "冒险", "desc": "体验大胆的经历" },
+                { "value": "倡导", "desc": "公开支持某项事业" },
+                { "value": "抱负", "desc": "实现目标或成就的强烈渴望" },
+                { "value": "欣赏", "desc": "认可并享受他人或事物的优点" },
+                { "value": "不卑不亢", "desc": "既不委屈自己，也不忽视他人" },
+                { "value": "吸引力", "desc": "对他人具有吸引力" },
+                { "value": "真诚", "desc": "在关系中保持诚实与真实" },
+                { "value": "权威", "desc": "对他人拥有权力与控制" },
+                { "value": "自主权", "desc": "独立且不受他人控制" },
+                { "value": "觉察", "desc": "保持对自我与他人的认知与感知" },
+                { "value": "平衡", "desc": "合理分配必须完成的事务与个人兴趣的时间" },
+                { "value": "美丽", "desc": "欣赏周围的美好品质" },
+                { "value": "善行", "desc": "对他人行善" },
+                { "value": "魄力", "desc": "自信或勇敢地冒险" },
+                { "value": "冷静", "desc": "保持情绪平稳" },
+                { "value": "关怀", "desc": "对他人展现善意与关心" },
+                { "value": "挑战", "desc": "尝试超越自己能力的事情" },
+                { "value": "变化", "desc": "享受多样的经历" },
+                { "value": "慈善", "desc": "帮助需要的人" },
+                { "value": "乐观", "desc": "以乐观拥抱生活" },
+                { "value": "聪明", "desc": "机智、创新、智慧或诙谐" },
+                { "value": "协作", "desc": "与他人分工合作以创造具体成果" },
+                { "value": "舒适", "desc": "拥有物质与身体上的安逸" },
+                { "value": "献身精神", "desc": "全心投入某项事业或活动" },
+                { "value": "社群", "desc": "与志同道合的群体互动" },
+                { "value": "同情心", "desc": "关注自己与他人的福祉" },
+                { "value": "自信", "desc": "相信自身能力" },
+                { "value": "一致性", "desc": "坚持相同的原则或行动" },
+                { "value": "贡献", "desc": "为他人利益而行动" },
+                { "value": "配合", "desc": "为共同目标协调行动或资源" },
+                { "value": "勇气", "desc": "自信而勇敢地面对事物" },
+                { "value": "礼貌", "desc": "对他人展现尊重与礼貌" },
+                { "value": "创造力", "desc": "以新方式表达想法" },
+                { "value": "好奇心", "desc": "渴望学习或了解事物" },
+                { "value": "敢做敢想", "desc": "有胆量，敢于冒险" },
+                { "value": "果断", "desc": "快速有效做决定" },
+                { "value": "奉献", "desc": "对任务或目标全心投入" },
+                { "value": "可靠性", "desc": "值得信赖" },
+                { "value": "多样性", "desc": "拥有广泛经历与兴趣" },
+                { "value": "责任", "desc": "履行道德或法律义务" },
+                { "value": "生态", "desc": "尊重环境" },
+                { "value": "同理心", "desc": "理解并考虑他人感受" },
+                { "value": "鼓励", "desc": "给予他人支持、信心与希望" },
+                { "value": "热情", "desc": "以享受、兴趣与认可的方式参与体验" },
+                { "value": "道德", "desc": "遵循道德准则约束行为" },
+                { "value": "卓越", "desc": "以高标准要求行动" },
+                { "value": "兴奋", "desc": "充满热情与刺激的生活" },
+                { "value": "表达力", "desc": "通过行动展现意义与情感" },
+                { "value": "公平", "desc": "公正对待他人" },
+                { "value": "忠诚", "desc": "建立基于忠诚与信任的关系（伴侣、朋友）" },
+                { "value": "名誉", "desc": "被众人所知" },
+                { "value": "家庭", "desc": "拥有团结有爱的家庭" },
+                { "value": "健康", "desc": "保持身体活跃与强健" },
+                { "value": "灵活性", "desc": "愿意在必要时改变或妥协" },
+                { "value": "专注", "desc": "心无旁骛完成任务" },
+                { "value": "宽恕", "desc": "释怀对他人的负面情绪" },
+                { "value": "自由", "desc": "按自己的意愿行动、说话或思考" },
+                { "value": "友谊", "desc": "建立友好支持的关系" },
+                { "value": "乐趣", "desc": "享受轻松、积极与有趣的体验" },
+                { "value": "慷慨", "desc": "无私地分享" },
+                { "value": "真实", "desc": "保持本真" },
+                { "value": "成长", "desc": "持续发展与进化" },
+                { "value": "健康", "desc": "远离疾病与伤害" },
+                { "value": "乐于助人", "desc": "随时支持他人" },
+                { "value": "诚实", "desc": "对自己与他人诚实" },
+                { "value": "希望", "desc": "对未来的积极期待" },
+                { "value": "谦逊", "desc": "保持谦虚" },
+                { "value": "幽默", "desc": "做个有趣的人，做些有趣的事" },
+                { "value": "包容性", "desc": "接纳并欢迎他人" },
+                { "value": "独立", "desc": "独立做事" },
+                { "value": "个性", "desc": "忠于自身独特品质" },
+                { "value": "勤奋", "desc": "勤勉投入工作" },
+                { "value": "内心的平静", "desc": "体验内在安宁" },
+                { "value": "创新", "desc": "追求新方法、想法或产品" },
+                { "value": "灵感", "desc": "激发创造力" },
+                { "value": "正直", "desc": "以道德与诚实行事" },
+                { "value": "智慧", "desc": "获取并应用知识与技能" },
+                { "value": "亲密", "desc": "与他人建立亲密关系" },
+                { "value": "直觉", "desc": "本能地理解事物" },
+                { "value": "喜悦", "desc": "从事带来愉悦感的行为" },
+                { "value": "正义", "desc": "按照规则公平行事" },
+                { "value": "善良", "desc": "友好、慷慨且体贴" },
+                { "value": "知识", "desc": "广泛了解事实与信息" },
+                { "value": "领导力", "desc": "领导团队或组织" },
+                { "value": "学习", "desc": "通过教育与经验获取知识或技能" },
+                { "value": "休闲", "desc": "参与放松与恢复活力的活动" },
+                { "value": "爱", "desc": "与他人分享情感" },
+                { "value": "忠心", "desc": "对他人展现真诚的支持与拥护（团队、组织）" },
+                { "value": "影响力", "desc": "对个人、情境或社会产生重大影响" },
+                { "value": "精通", "desc": "在特定领域拥有全面知识或技能" },
+                { "value": "正念", "desc": "专注当下并不加评判" },
+                { "value": "温和", "desc": "避免极端行为并寻求平衡" },
+                { "value": "专一伴侣", "desc": "拥有唯一长期亲密关系" },
+                { "value": "动力", "desc": "充满热情追求活动" },
+                { "value": "不墨守成规", "desc": "不局限于大众普遍接受的方式或信念" },
+                { "value": "培养", "desc": "关爱与保护他人" },
+                { "value": "开放心态", "desc": "接纳新观点、想法或信念" },
+                { "value": "秩序", "desc": "保持条理并遵循既定惯例" },
+                { "value": "激情", "desc": "拥有强烈感受或信念" },
+                { "value": "耐心", "desc": "平静等待期望的结果" },
+                { "value": "平和", "desc": "以宁静而放松的方式生活" },
+                { "value": "坚持", "desc": "坚定追求目标" },
+                { "value": "个人发展", "desc": "主动追求个人成长" },
+                { "value": "好玩", "desc": "轻松或充满乐趣" },
+                { "value": "愉悦", "desc": "体验满足与享受" },
+                { "value": "受欢迎", "desc": "被多数人支持与钦佩" },
+                { "value": "积极", "desc": "对经历与人保持积极态度" },
+                { "value": "权力", "desc": "对他人具有影响力" },
+                { "value": "准备就绪", "desc": "处于随时可行动的状态" },
+                { "value": "主动性", "desc": "掌控并推动事物发展" },
+                { "value": "目的", "desc": "拥有明确的奋斗目标" },
+                { "value": "理性", "desc": "依逻辑行事" },
+                { "value": "现实主义", "desc": "基于实际与真相" },
+                { "value": "关系", "desc": "与他人建立联系" },
+                { "value": "可靠性", "desc": "值得信赖或始终如一" },
+                { "value": "宗教", "desc": "遵循自身宗教信仰" },
+                { "value": "韧性", "desc": "从挑战中恢复" },
+                { "value": "机智", "desc": "快速找到解决方案" },
+                { "value": "责任", "desc": "可靠并对自身行为负责" },
+                { "value": "反应能力", "desc": "轻松且迅速回应" },
+                { "value": "风险", "desc": "承担可能带来负面结果的机会" },
+                { "value": "浪漫", "desc": "参与深刻而令人兴奋的爱的行为" },
+                { "value": "安全", "desc": "处于安全受保护状态" },
+                { "value": "自我接纳", "desc": "善待并接纳自己" },
+                { "value": "自制力", "desc": "控制情绪、行为与欲望" },
+                { "value": "自尊", "desc": "尊重并相信自身价值与能力" },
+                { "value": "自我认识", "desc": "了解自身价值观、能力与情感" },
+                { "value": "服务", "desc": "帮助或为他人工作" },
+                { "value": "性生活", "desc": "拥有满意的性生活" },
+                { "value": "简单", "desc": "以最低需求生活" },
+                { "value": "独处", "desc": "拥有远离他人的个人空间" },
+                { "value": "灵性", "desc": "触及更深层的意义或目标" },
+                { "value": "稳定", "desc": "保持相对稳定的生活" },
+                { "value": "坚韧", "desc": "在挑战中保持情绪稳定" },
+                { "value": "成功", "desc": "实现目标或目的" },
+                { "value": "团队合作", "desc": "与他人协作" },
+                { "value": "体贴", "desc": "考虑他人需求" },
+                { "value": "宽容", "desc": "尊重不同观点与行为" },
+                { "value": "传统", "desc": "遵循先辈习俗" },
+                { "value": "透明", "desc": "公开且诚实无隐瞒" },
+                { "value": "信任", "desc": "相信他人的真实性" },
+                { "value": "可信赖", "desc": "作为诚实可靠的人被依赖" },
+                { "value": "理解", "desc": "对他人抱有同理心与宽容" },
+                { "value": "独特", "desc": "成为独一无二的个体" },
+                { "value": "多才多艺", "desc": "适应多种职能或活动" },
+                { "value": "美德", "desc": "展现高道德标准" },
+                { "value": "远见", "desc": "为未来思考或规划" },
+                { "value": "温暖", "desc": "以热情、关爱或善意待人" },
+                { "value": "财富", "desc": "拥有大量物质或金钱" },
+                { "value": "福祉", "desc": "处于舒适、健康与满足状态" },
+                { "value": "智慧", "desc": "拥有经验、知识与良好判断力" },
+                { "value": "世界和平", "desc": "致力于建立全球和谐" },
+                { "value": "热忱", "desc": "对事业充满活力与热情" }
+            ],
+            en: [
+                { "value": "ABUNDANCE", "desc": "to have a life filled with heart-driven experiences" },
+                { "value": "ACCEPTANCE", "desc": "to accept the people and experiences around me" },
+                { "value": "ACCOUNTABILITY", "desc": "to hold true to my commitments" },
+                { "value": "ACCURACY", "desc": "to be correct or precise" },
+                { "value": "ACHIEVEMENT", "desc": "to have accomplishments and successes" },
+                { "value": "ADVANCEMENT", "desc": "to promote a cause or a plan" },
+                { "value": "ADVENTURE", "desc": "to have daring experiences" },
+                { "value": "ADVOCACY", "desc": "to demonstrate public support or a cause" },
+                { "value": "AMBITION", "desc": "to fulfil a strong desire to do or achieve something" },
+                { "value": "APPRECIATION", "desc": "to recognise and enjoy the good qualities of someone or something" },
+                { "value": "ASSERTIVENESS", "desc": "to stand up for myself while considering the needs of others" },
+                { "value": "ATTRACTIVENESS", "desc": "to be appealing to others" },
+                { "value": "AUTHENTICITY", "desc": "to be honest and real in relationships" },
+                { "value": "AUTHORITY", "desc": "to have power and control over others" },
+                { "value": "AUTONOMY", "desc": "to be independent and free from control by others" },
+                { "value": "AWARENESS", "desc": "to maintain knowledge and perception about myself and others" },
+                { "value": "BALANCE", "desc": "to create time for the things I have to do and want to do" },
+                { "value": "BEAUTY", "desc": "to appreciate the qualities around me" },
+                { "value": "BENEVOLENCE", "desc": "to engage in acts of kindness towards others" },
+                { "value": "BOLDNESS", "desc": "to take risks and act with confidence or courage" },
+                { "value": "CALMNESS", "desc": "to be free from agitation or strong emotion" },
+                { "value": "CARING", "desc": "to display kindness and concern for others" },
+                { "value": "CHALLENGE", "desc": "to take on situations that stretch my abilities" },
+                { "value": "CHANGE", "desc": "to enjoy variety in situations and experiences" },
+                { "value": "CHARITY", "desc": "to give help to those in need" },
+                { "value": "CHEERFULNESS", "desc": "to embrace life with optimism" },
+                { "value": "CLEVERNESS", "desc": "to be smart, inventive, wise or witty" },
+                { "value": "COLLABORATION", "desc": "to work with others to produce something" },
+                { "value": "COMFORT", "desc": "to have a life with physical and material ease" },
+                { "value": "COMMITMENT", "desc": "to be dedicated to a cause or activity" },
+                { "value": "COMMUNITY", "desc": "to engage with other groups with similar attitudes or interests" },
+                { "value": "COMPASSION", "desc": "to behave with consideration for the wellbeing of myself and others" },
+                { "value": "CONFIDENCE", "desc": "to have belief in my own abilities" },
+                { "value": "CONSISTENCY", "desc": "to maintain adherence to the same principles or actions" },
+                { "value": "CONTRIBUTION", "desc": "to do something for the benefit of others" },
+                { "value": "COOPERATION", "desc": "to engage with others towards a common goal" },
+                { "value": "COURAGE", "desc": "to approach things with confidence and bravery" },
+                { "value": "COURTESY", "desc": "to demonstrate respect for and politeness towards others" },
+                { "value": "CREATIVITY", "desc": "to express ideas in new ways" },
+                { "value": "CURIOSITY", "desc": "to have a strong desire to know or learn something" },
+                { "value": "DARING", "desc": "to be adventurous or bold" },
+                { "value": "DECISIVENESS", "desc": "to make decisions quickly and effectively" },
+                { "value": "DEDICATION", "desc": "to be committed to a task or purpose" },
+                { "value": "DEPENDABILITY", "desc": "to be able to be relied on" },
+                { "value": "DIVERSITY", "desc": "to have a range of experiences and interests" },
+                { "value": "DUTY", "desc": "to act in accordance with moral or legal obligations" },
+                { "value": "ECOLOGY", "desc": "to act with respect for the environment" },
+                { "value": "EMPATHY", "desc": "to understand and engage with consideration of the feelings of others" },
+                { "value": "ENCOURAGEMENT", "desc": "to give others support, confidence and hope" },
+                { "value": "ENTHUSIASM", "desc": "to engage in experiences with enjoyment, interest and approval" },
+                { "value": "ETHICS", "desc": "to have moral principles governing my behaviour" },
+                { "value": "EXCELLENCE", "desc": "to have outstanding standards governing my actions" },
+                { "value": "EXCITEMENT", "desc": "to live life with enthusiasm and thrills" },
+                { "value": "EXPRESSIVENESS", "desc": "to display meaning and emotion in my actions" },
+                { "value": "FAIRNESS", "desc": "to provide impartial and just treatment with others" },
+                { "value": "FAITHFULNESS", "desc": "to have relationships built on loyalty and trust" },
+                { "value": "FAME", "desc": "to be known by many" },
+                { "value": "FAMILY", "desc": "to have a cohesive and loving family" },
+                { "value": "FITNESS", "desc": "to engage in physical activity and be toned or strong" },
+                { "value": "FLEXIBILITY", "desc": "to be willing to change or compromise when required" },
+                { "value": "FOCUS", "desc": "to concentrate on a task without distraction" },
+                { "value": "FORGIVENESS", "desc": "to let go of ill feelings towards others" },
+                { "value": "FREEDOM", "desc": "to act, speak, or think as I want" },
+                { "value": "FRIENDSHIP", "desc": "to have amicable, supportive relationships" },
+                { "value": "FUN", "desc": "to have light-hearted, positive and playful experiences" },
+                { "value": "GENEROSITY", "desc": "to share in abundance" },
+                { "value": "GENUINENESS", "desc": "to be authentic and real" },
+                { "value": "GROWTH", "desc": "to keep developing and evolving" },
+                { "value": "HEALTH", "desc": "to be free from illness or injury" },
+                { "value": "HELPFULNESS", "desc": "to be available to support others" },
+                { "value": "HONESTY", "desc": "to be truthful with myself and others" },
+                { "value": "HOPE", "desc": "to have positive expectations for the future" },
+                { "value": "HUMILITY", "desc": "to be humble and modest" },
+                { "value": "HUMOUR", "desc": "to be amusing or engage in amusing experiences" },
+                { "value": "INCLUSIVENESS", "desc": "to let people in and make them feel welcome" },
+                { "value": "INDEPENDENCE", "desc": "to do things for myself" },
+                { "value": "INDIVIDUALITY", "desc": "to be true to the quality or character that distinguishes me from others" },
+                { "value": "INDUSTRY", "desc": "to work with diligence and commitment" },
+                { "value": "INNER PEACE", "desc": "to experience internal tranquillity" },
+                { "value": "INNOVATION", "desc": "to pursue or create new methods, ideas or products" },
+                { "value": "INSPIRATION", "desc": "to be stimulated to do something creative" },
+                { "value": "INTEGRITY", "desc": "to engage ethically and honestly" },
+                { "value": "INTELLIGENCE", "desc": "to acquire and apply knowledge and skills" },
+                { "value": "INTIMACY", "desc": "to share intimate connections with others" },
+                { "value": "INTUITION", "desc": "to understand something instinctively" },
+                { "value": "JOY", "desc": "to engage in actions that provide feelings of pleasure" },
+                { "value": "JUSTICE", "desc": "to engage fairly and in line with rules" },
+                { "value": "KINDNESS", "desc": "to be friendly, generous and considerate" },
+                { "value": "KNOWLEDGE", "desc": "to have broad awareness of facts and information" },
+                { "value": "LEADERSHIP", "desc": "to lead a group of people or an organisation" },
+                { "value": "LEARNING", "desc": "to acquire knowledge or skills through education and experience" },
+                { "value": "LEISURE", "desc": "to engage in relaxing and rejuvenating activities" },
+                { "value": "LOVE", "desc": "to share affection with others" },
+                { "value": "LOYALTY", "desc": "to demonstrate honest allegiance and support to others" },
+                { "value": "MAKING A DIFFERENCE", "desc": "to have a significant effect on a person, situation or society" },
+                { "value": "MASTERY", "desc": "to have comprehensive knowledge or skill in a particular area" },
+                { "value": "MINDFULNESS", "desc": "to embrace the present moment intentionally and without judgement" },
+                { "value": "MODERATION", "desc": "to avoid extremes in behaviour or opinions and find the middle ground" },
+                { "value": "MONOGAMY", "desc": "to have only one longstanding intimate partner" },
+                { "value": "MOTIVATION", "desc": "to pursue activities with enthusiasm" },
+                { "value": "NON-CONFORMITY", "desc": "to move away from generally accepted ways of engaging or beliefs" },
+                { "value": "NURTURE", "desc": "to care for and protect others" },
+                { "value": "OPEN-MINDEDNESS", "desc": "to consider new opinions, ideas or beliefs" },
+                { "value": "ORDER", "desc": "to be well organised and follow a predetermined routine" },
+                { "value": "PASSION", "desc": "to have strong feelings or beliefs" },
+                { "value": "PATIENCE", "desc": "to wait for a desired outcome without becoming agitated" },
+                { "value": "PEACE", "desc": "to engage in life with tranquility and relaxation" },
+                { "value": "PERSISTENCE", "desc": "to work with determination towards a goal" },
+                { "value": "PERSONAL DEVELOPMENT", "desc": "to consciously pursue personal growth" },
+                { "value": "PLAYFULNESS", "desc": "to be light-hearted or full of fun" },
+                { "value": "PLEASURE", "desc": "to experience satisfaction and enjoyment" },
+                { "value": "POPULARITY", "desc": "to be supported and admired by many others" },
+                { "value": "POSITIVITY", "desc": "to have a positive outlook on experiences and individuals" },
+                { "value": "POWER", "desc": "to be in a position of influence over others" },
+                { "value": "PREPAREDNESS", "desc": "to be in a state of readiness" },
+                { "value": "PROACTIVITY", "desc": "to take control and make things happen" },
+                { "value": "PURPOSE", "desc": "to have a specific objective that you are working towards" },
+                { "value": "RATIONALITY", "desc": "to act in accordance with logic" },
+                { "value": "REALISM", "desc": "to be grounded in practicality and truth" },
+                { "value": "RELATIONSHIPS", "desc": "to connect with others" },
+                { "value": "RELIABILITY", "desc": "to be trustworthy or consistent" },
+                { "value": "RELIGION", "desc": "to act in accordance with my religious beliefs" },
+                { "value": "RESILIENCE", "desc": "to bounce back from challenges" },
+                { "value": "RESOURCEFULNESS", "desc": "to find quick and clever ways to resolve situations" },
+                { "value": "RESPONSIBILITY", "desc": "to be able to be relied upon and accountable for my actions" },
+                { "value": "RESPONSIVENESS", "desc": "to react easily and readily" },
+                { "value": "RISK", "desc": "to take chances with the possibility of something bad happening" },
+                { "value": "ROMANCE", "desc": "to engage in deep and exciting acts of love" },
+                { "value": "SAFETY", "desc": "to be secure and protected" },
+                { "value": "SELF-ACCEPTANCE", "desc": "to be kind to and accepting of myself" },
+                { "value": "SELF-CONTROL", "desc": "to control my own emotions, actions and desires" },
+                { "value": "SELF-ESTEEM", "desc": "to have self-respect and confidence in my own worth and abilities" },
+                { "value": "SELF-KNOWLEDGE", "desc": "to know my own values, abilities and emotions" },
+                { "value": "SERVICE", "desc": "to help or do work for others" },
+                { "value": "SEXUALITY", "desc": "to have a satisfying sex life" },
+                { "value": "SIMPLICITY", "desc": "to live life with minimal needs" },
+                { "value": "SOLITUDE", "desc": "to have my own space away from others" },
+                { "value": "SPIRITUALITY", "desc": "to be in touch with a deeper sense of meaning or purpose" },
+                { "value": "STABILITY", "desc": "to have a fairly consistent life" },
+                { "value": "STOICISM", "desc": "to remain emotionally strong and undisturbed through challenge" },
+                { "value": "SUCCESS", "desc": "to accomplish an aim or purpose" },
+                { "value": "TEAMWORK", "desc": "to engage cooperatively with a group" },
+                { "value": "THOUGHTFULNESS", "desc": "to consider the needs of others" },
+                { "value": "TOLERANCE", "desc": "to respect differing opinions and behaviours" },
+                { "value": "TRADITION", "desc": "to follow customs from previous generations" },
+                { "value": "TRANSPARENCY", "desc": "to be open and honest with nothing to hide" },
+                { "value": "TRUST", "desc": "to believe in the truth of others" },
+                { "value": "TRUSTWORTHINESS", "desc": "to be relied on as honest or truthful" },
+                { "value": "UNDERSTANDING", "desc": "to be sympathetic and tolerant of others" },
+                { "value": "UNIQUENESS", "desc": "to be one of a kind, special or unusual" },
+                { "value": "VERSATILITY", "desc": "to adapt to many different functions or activities" },
+                { "value": "VIRTUE", "desc": "to display high moral standards in my behaviour" },
+                { "value": "VISION", "desc": "to think or plan for the future" },
+                { "value": "WARMTH", "desc": "to engage with enthusiasm, affection or kindness" },
+                { "value": "WEALTH", "desc": "to have an abundance of valuable possessions or money" },
+                { "value": "WELLBEING", "desc": "to be comfortable, healthy and content" },
+                { "value": "WISDOM", "desc": "to have experience, knowledge and good judgement" },
+                { "value": "WORLD PEACE", "desc": "to work towards establishing greater peace and harmony in the world" },
+                { "value": "ZEAL", "desc": "to have high energy and enthusiasm for a cause" }
+            ]
+        };
+        let selectedWords = [];
+        let currentWords = [];
+
+        function shuffleArray(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function updateWordDisplay() {
+            const container = document.getElementById("word-container");
+            container.innerHTML = "";
+            currentWords.forEach((word, index) => {
+                const span = document.createElement("span");
+                span.textContent = word.value;
+                span.className = index === 0 ? "text-black text-2xl font-bold" : "text-gray-500 text-md";
+                container.appendChild(span);
+            });
+        }
+
+        document.getElementById("skip-button").addEventListener("click", () => {
+            selectedWords.push(currentWords.shift());
+            updateWordDisplay();
+            updateSelectedList();
+        });
+
+        document.getElementById("select-button").addEventListener("click", () => {
+            selectedWords.push(currentWords.shift());
+            updateWordDisplay();
+            updateSelectedList();
+        });
+
+        function updateSelectedList() {
+            const list = document.getElementById("selected-list");
+            list.innerHTML = "";
+            selectedWords.forEach(word => {
+                const li = document.createElement("li");
+                li.textContent = word.value;
+                li.className = "p-2 bg-gray-100 rounded cursor-move";
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById("toggle-language").addEventListener("click", () => {
+            language = language === 'cn' ? 'en' : 'cn';
+            selectedWords = [];
+            currentWords = shuffleArray([...words[language]]);
+            updateWordDisplay();
+            updateSelectedList();
+        });
+
+        document.getElementById("toggle-button").addEventListener("click", () => {
+            const list = document.getElementById("selected-list");
+            if (list.classList.contains("max-h-60")) {
+                list.classList.remove("max-h-60", "overflow-hidden");
+                document.getElementById("toggle-button").textContent = "收起";
+            } else {
+                list.classList.add("max-h-60", "overflow-hidden");
+                document.getElementById("toggle-button").textContent = "展开全部";
+            }
+        });
+
+        new Sortable(document.getElementById("selected-list"), {
+            animation: 150,
+            ghostClass: "bg-blue-100"
+        });
+
+        currentWords = shuffleArray([...words[language]]);
+        updateWordDisplay();
+    </script>
+</body>
+
+</html>
